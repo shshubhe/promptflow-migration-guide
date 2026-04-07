@@ -4,11 +4,11 @@
 
 agent-framework>=1.0.0
 agent-framework-azure-ai-search>=1.0.0
+agent-framework-foundry>=1.0.0
 
 # agent-framework-azure-ai was removed in MAF 1.0; its functionality moved to
-# agent-framework-foundry. Install this when using the Foundry project endpoint
-# (see phase-4-migrate-ops/4b-deployment/foundry_client.py).
-# agent-framework-foundry>=1.0.0
+# agent-framework-foundry (used by the Foundry project endpoint sample in
+# phase-4-migrate-ops/4b-deployment/foundry_client.py).
 
 # Evaluation (Phase 3)
 azure-ai-evaluation

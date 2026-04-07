@@ -16,6 +16,7 @@ Prerequisites:
 
 import asyncio
 import os
+from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -26,7 +27,12 @@ from azure.ai.evaluation import SimilarityEvaluator
 # from your_module import workflow
 # ─────────────────────────────────────────────────────────────────────────────
 
-load_dotenv()
+SCRIPT_DIR = Path(__file__).resolve().parent
+INPUT_CSV_PATH = SCRIPT_DIR / "test_inputs.csv"
+OUTPUT_CSV_PATH = SCRIPT_DIR / "parity_results.csv"
+ENV_PATH = SCRIPT_DIR.parent / ".env"
+
+load_dotenv(dotenv_path=ENV_PATH)
 
 # Startup guard: fail fast with a clear message if the workflow was not imported.
 if "workflow" not in globals():
@@ -46,7 +52,14 @@ model_config = {
 SIMILARITY_THRESHOLD = 3.5  # Scores below this are flagged for review (scale: 1–5)
 
 evaluator = SimilarityEvaluator(model_config=model_config, threshold=3)
-test_data = pd.read_csv("test_inputs.csv")
+if not INPUT_CSV_PATH.exists():
+    raise FileNotFoundError(
+        f"Missing input file: {INPUT_CSV_PATH}\n"
+        "Copy test_inputs.csv.example to test_inputs.csv and replace it with your "
+        "captured Prompt Flow outputs before running parity_check.py."
+    )
+
+test_data = pd.read_csv(INPUT_CSV_PATH)
 results = []
 
 
@@ -83,8 +96,8 @@ async def run_parity_check():
         print(f"\n{len(regressions)} answer(s) to review:")
         print(regressions[["question", "similarity"]].to_string(index=False))
 
-    df.to_csv("parity_results.csv", index=False)
-    print("\nFull results saved to parity_results.csv")
+    df.to_csv(OUTPUT_CSV_PATH, index=False)
+    print(f"\nFull results saved to {OUTPUT_CSV_PATH}")
 
 
 if __name__ == "__main__":

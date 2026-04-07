@@ -75,7 +75,7 @@ These are the foundational abstractions agents should understand when generating
 from agent_framework import Agent, Executor, WorkflowBuilder, WorkflowContext, handler
 from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.foundry import FoundryChatClient
-from agent_framework.azure_ai_search import AzureAISearchContextProvider
+from agent_framework.azure import AzureAISearchContextProvider
 ```
 
 > **Breaking change**: `agent-framework-azure-ai` was removed in 1.0. Use `agent-framework-foundry` instead.

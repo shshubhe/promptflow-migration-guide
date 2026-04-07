@@ -19,7 +19,7 @@ load_dotenv()
 
 
 class ClassifyExecutor(Executor):
-    """Classifies input and sends a label ('safe' or 'unsafe') downstream.
+    """Classifies input and sends a tagged payload downstream.
 
     Replace the body of classify() with your real classification logic
     (e.g. an LLM call, a rules engine, a model inference call).
@@ -28,23 +28,25 @@ class ClassifyExecutor(Executor):
     @handler
     async def classify(self, text: str, ctx: WorkflowContext[str]) -> None:
         label = "unsafe" if "bad_word" in text.lower() else "safe"
-        await ctx.send_message(label)
+        await ctx.send_message(f"{label}||{text}")
 
 
 class SafeHandlerExecutor(Executor):
     """Handles input that passed the safety check."""
 
     @handler
-    async def handle_safe(self, label: str, ctx: WorkflowContext[Never, str]) -> None:
-        await ctx.yield_output(f"Processed: {label}")
+    async def handle_safe(self, tagged: str, ctx: WorkflowContext[Never, str]) -> None:
+        _, original_text = tagged.split("||", 1)
+        await ctx.yield_output(f"Processed: {original_text}")
 
 
 class FlaggedHandlerExecutor(Executor):
     """Handles input that failed the safety check."""
 
     @handler
-    async def handle_flagged(self, label: str, ctx: WorkflowContext[Never, str]) -> None:
-        await ctx.yield_output(f"Flagged for review: {label}")
+    async def handle_flagged(self, tagged: str, ctx: WorkflowContext[Never, str]) -> None:
+        _, original_text = tagged.split("||", 1)
+        await ctx.yield_output(f"Flagged for review: {original_text}")
 
 
 def is_safe(message: str) -> bool:
@@ -53,12 +55,12 @@ def is_safe(message: str) -> bool:
     Receives the outgoing message from ClassifyExecutor.
     Returns True to fire the edge, False to suppress it.
     """
-    return message.lower() != "unsafe"
+    return message.startswith("safe||")
 
 
 def is_unsafe(message: str) -> bool:
     """Explicit negation of is_safe — clearer and more testable than a lambda."""
-    return not is_safe(message)
+    return message.startswith("unsafe||")
 
 
 # Two edges leave ClassifyExecutor — only one fires per run.
