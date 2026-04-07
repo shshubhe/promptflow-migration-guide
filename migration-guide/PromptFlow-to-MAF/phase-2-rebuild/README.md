@@ -7,11 +7,11 @@ and `Executor` pattern. Work through the samples in numbered order.
 
 | File | Prompt Flow pattern it replaces |
 |---|---|
-| [01_linear_flow.py](/01_linear_flow.py) | Input node → LLM node |
-| [02_python_node.py](/02_python_node.py) | Python code node with custom logic |
-| [03_conditional_flow.py](/03_conditional_flow.py) | If / conditional node |
-| [04_parallel_flow.py](/04_parallel_flow.py)| Parallel nodes with no shared dependencies |
-| [05_rag_flow.py](/05_rag_flow.py) | Embed Text + Vector Lookup + LLM nodes (full RAG pipeline) |
+| [01_linear_flow.py](01_linear_flow.py) | Input node → LLM node |
+| [02_python_node.py](02_python_node.py) | Python code node with custom logic |
+| [03_conditional_flow.py](03_conditional_flow.py) | If / conditional node |
+| [04_parallel_flow.py](04_parallel_flow.py)| Parallel nodes with no shared dependencies |
+| [05_rag_flow.py](05_rag_flow.py) | Embed Text + Vector Lookup + LLM nodes (full RAG pipeline) |
 
 ## Run any sample
 
