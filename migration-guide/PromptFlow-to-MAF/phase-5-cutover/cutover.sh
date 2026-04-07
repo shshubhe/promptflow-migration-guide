@@ -17,14 +17,17 @@ FLOW_DIR="<your-flow-directory>"
 read -p "Confirm traffic has been rerouted to the MAF endpoint (y/n): " confirm
 [[ "$confirm" == "y" ]] || { echo "Aborting."; exit 1; }
 
+echo "Archiving flow YAML..."
 pf flow archive --source "$FLOW_DIR"
 
+echo "Deleting PF managed online endpoint..."
 az ml online-endpoint delete \
   --name "$PF_ENDPOINT" \
   --resource-group "$RESOURCE_GROUP" \
   --workspace-name "$WORKSPACE" \
   --yes
 
+echo "Deleting PF connection..."
 az ml connection delete \
   --name "$PF_CONNECTION" \
   --resource-group "$RESOURCE_GROUP" \
