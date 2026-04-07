@@ -11,18 +11,18 @@ agent-framework-foundry>=1.0.0
 # phase-4-migrate-ops/4b-deployment/foundry_client.py).
 
 # Evaluation (Phase 3)
-azure-ai-evaluation
+azure-ai-evaluation>=1.16.0
 
 # Deployment wrapper (Phase 4b)
-fastapi
-uvicorn
-python-dotenv
+fastapi>=0.115.0
+uvicorn>=0.34.0
+python-dotenv>=1.0.0
 
 # Tracing (Phase 4a)
-azure-monitor-opentelemetry
+azure-monitor-opentelemetry>=1.6.0
 
 # Azure identity — used by Foundry client alternative
-azure-identity
+azure-identity>=1.19.0
 
 # Parity check (Phase 3)
-pandas
+pandas>=2.2.0

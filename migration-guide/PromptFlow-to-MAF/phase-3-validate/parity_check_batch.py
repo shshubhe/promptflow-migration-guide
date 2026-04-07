@@ -25,38 +25,23 @@ GUIDE_ROOT = SCRIPT_DIR.parent
 INPUT_CSV_PATH = SCRIPT_DIR / "test_inputs.csv"
 OUTPUT_CSV_PATH = SCRIPT_DIR / "parity_results.csv"
 ENV_PATH = GUIDE_ROOT / ".env"
+SIMILARITY_THRESHOLD = 3.5  # Scale: 1–5. Rows below this are flagged for review.
+CONCURRENCY_LIMIT = 5  # Max simultaneous Azure OpenAI calls; prevents 429 rate-limit errors.
+                       # Adjust based on your Azure OpenAI quota (tokens-per-minute limit).
 
 if str(GUIDE_ROOT) not in sys.path:
     sys.path.insert(0, str(GUIDE_ROOT))
 
 from workflow_loader import load_workflow
 
-load_dotenv(dotenv_path=ENV_PATH)
 
-workflow = load_workflow()
-
-model_config = {
-    "azure_endpoint": os.environ["AZURE_OPENAI_ENDPOINT"],
-    "api_key": os.environ["AZURE_OPENAI_API_KEY"],
-    "azure_deployment": os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
-}
-
-SIMILARITY_THRESHOLD = 3.5  # Scale: 1–5. Rows below this are flagged for review.
-CONCURRENCY_LIMIT = 5  # Max simultaneous Azure OpenAI calls; prevents 429 rate-limit errors.
-                       # Adjust based on your Azure OpenAI quota (tokens-per-minute limit).
-
-evaluator = SimilarityEvaluator(model_config=model_config, threshold=3)
-if not INPUT_CSV_PATH.exists():
-    raise FileNotFoundError(
-        f"Missing input file: {INPUT_CSV_PATH}\n"
-        "Copy test_inputs.csv.example to test_inputs.csv and replace it with your "
-        "captured Prompt Flow outputs before running parity_check_batch.py."
-    )
-
-test_data = pd.read_csv(INPUT_CSV_PATH)
-
-
-async def evaluate_row(semaphore: asyncio.Semaphore, question: str, pf_answer: str) -> dict:
+async def evaluate_row(
+    semaphore: asyncio.Semaphore,
+    workflow,
+    evaluator,
+    question: str,
+    pf_answer: str,
+) -> dict:
     """Runs one MAF workflow call and scores it against the PF baseline."""
     async with semaphore:
         maf_result = await workflow.run(question)
@@ -81,9 +66,30 @@ async def evaluate_row(semaphore: asyncio.Semaphore, question: str, pf_answer: s
 
 
 async def run_parity_check():
+    load_dotenv(dotenv_path=ENV_PATH)
+
+    workflow = load_workflow()
+
+    model_config = {
+        "azure_endpoint": os.environ["AZURE_OPENAI_ENDPOINT"],
+        "api_key": os.environ["AZURE_OPENAI_API_KEY"],
+        "azure_deployment": os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+    }
+
+    evaluator = SimilarityEvaluator(model_config=model_config, threshold=3)
+
+    if not INPUT_CSV_PATH.exists():
+        raise FileNotFoundError(
+            f"Missing input file: {INPUT_CSV_PATH}\n"
+            "Copy test_inputs.csv.example to test_inputs.csv and replace it with your "
+            "captured Prompt Flow outputs before running parity_check_batch.py."
+        )
+
+    test_data = pd.read_csv(INPUT_CSV_PATH)
+
     semaphore = asyncio.Semaphore(CONCURRENCY_LIMIT)
     tasks = [
-        evaluate_row(semaphore, row["question"], row["pf_output"])
+        evaluate_row(semaphore, workflow, evaluator, row["question"], row["pf_output"])
         for _, row in test_data.iterrows()
     ]
 

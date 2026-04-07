@@ -1,3 +1,6 @@
+# Build context must be the PromptFlow-to-MAF/ root directory.
+# The deploy.sh script sets this automatically via 'az acr build . --file ...'.
+# Do not run 'docker build' from this subdirectory directly.
 FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONPATH=/app

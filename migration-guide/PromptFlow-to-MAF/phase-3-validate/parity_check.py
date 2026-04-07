@@ -29,38 +29,38 @@ GUIDE_ROOT = SCRIPT_DIR.parent
 INPUT_CSV_PATH = SCRIPT_DIR / "test_inputs.csv"
 OUTPUT_CSV_PATH = SCRIPT_DIR / "parity_results.csv"
 ENV_PATH = GUIDE_ROOT / ".env"
+SIMILARITY_THRESHOLD = 3.5  # Scores below this are flagged for review (scale: 1–5)
 
 if str(GUIDE_ROOT) not in sys.path:
     sys.path.insert(0, str(GUIDE_ROOT))
 
 from workflow_loader import load_workflow
 
-load_dotenv(dotenv_path=ENV_PATH)
-
-workflow = load_workflow()
-
-# SimilarityEvaluator requires model_config in GA (1.16+).
-model_config = {
-    "azure_endpoint": os.environ["AZURE_OPENAI_ENDPOINT"],
-    "api_key": os.environ["AZURE_OPENAI_API_KEY"],
-    "azure_deployment": os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
-}
-
-SIMILARITY_THRESHOLD = 3.5  # Scores below this are flagged for review (scale: 1–5)
-
-evaluator = SimilarityEvaluator(model_config=model_config, threshold=3)
-if not INPUT_CSV_PATH.exists():
-    raise FileNotFoundError(
-        f"Missing input file: {INPUT_CSV_PATH}\n"
-        "Copy test_inputs.csv.example to test_inputs.csv and replace it with your "
-        "captured Prompt Flow outputs before running parity_check.py."
-    )
-
-test_data = pd.read_csv(INPUT_CSV_PATH)
-results = []
-
 
 async def run_parity_check():
+    load_dotenv(dotenv_path=ENV_PATH)
+
+    workflow = load_workflow()
+
+    # SimilarityEvaluator requires model_config in GA (1.16+).
+    model_config = {
+        "azure_endpoint": os.environ["AZURE_OPENAI_ENDPOINT"],
+        "api_key": os.environ["AZURE_OPENAI_API_KEY"],
+        "azure_deployment": os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+    }
+
+    evaluator = SimilarityEvaluator(model_config=model_config, threshold=3)
+
+    if not INPUT_CSV_PATH.exists():
+        raise FileNotFoundError(
+            f"Missing input file: {INPUT_CSV_PATH}\n"
+            "Copy test_inputs.csv.example to test_inputs.csv and replace it with your "
+            "captured Prompt Flow outputs before running parity_check.py."
+        )
+
+    test_data = pd.read_csv(INPUT_CSV_PATH)
+    results = []
+
     for _, row in test_data.iterrows():
         question = row["question"]
         pf_answer = row["pf_output"]
@@ -68,9 +68,12 @@ async def run_parity_check():
         maf_result = await workflow.run(question)
         maf_answer = maf_result.get_outputs()[0]
 
+        # evaluator() is a synchronous callable that makes network requests.
+        # Wrap in asyncio.to_thread() to avoid blocking the event loop.
         # evaluator() returns {"similarity": float, "gpt_similarity": float}.
         # Use "similarity" — "gpt_similarity" is deprecated in GA.
-        score_dict = evaluator(
+        score_dict = await asyncio.to_thread(
+            evaluator,
             query=question,
             response=maf_answer,
             ground_truth=pf_answer,

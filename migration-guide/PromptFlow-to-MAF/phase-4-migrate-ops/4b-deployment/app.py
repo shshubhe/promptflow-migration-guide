@@ -58,6 +58,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="MAF Workflow Service", lifespan=lifespan)
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 @app.post("/ask", response_model=AnswerResponse)
 async def ask(payload: QuestionRequest):
     if not payload.question.strip():

@@ -29,7 +29,7 @@ The core mental model:
 - The flow graph → a WorkflowBuilder chain with .add_edge() calls
 - Connections (credentials) → environment variables in .env
 
-# Checklist before moving to Phase 2
+## Checklist before moving to Phase 2
 - [ ] flow.dag.yaml exported and reviewed
 - [ ] Every node has a mapped MAF equivalent (see [node-mapping.md](./node-mapping.md))
 - [ ] .env file populated (copy [.env.example](../.env.example) from repo root)

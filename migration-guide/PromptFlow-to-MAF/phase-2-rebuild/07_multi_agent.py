@@ -64,6 +64,7 @@ class TriageExecutor(Executor):
         result = await triage_agent.run(question)
         category = result.strip().lower()
         if category not in ("billing", "technical"):
+            print(f"[TriageExecutor] Unexpected category '{category}'; defaulting to 'technical'.", flush=True)
             category = "technical"  # default fallback
         await ctx.send_message(f"{category}||{question}")
 

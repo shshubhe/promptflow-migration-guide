@@ -50,8 +50,8 @@ if ! $DRY_RUN && ! $SKIP_CONFIRM; then
     [[ "$confirm" == "y" ]] || { echo "Aborting."; exit 1; }
 fi
 
-echo "Archiving flow YAML..."
-run pf flow archive --source "$FLOW_DIR"
+echo "Archiving flow YAML to ./archived-flow/..."
+run cp -r "$FLOW_DIR" ./archived-flow/
 
 echo "Deleting PF managed online endpoint..."
 run az ml online-endpoint delete \
