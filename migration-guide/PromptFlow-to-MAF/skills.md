@@ -6,7 +6,7 @@ Instructions for AI coding agents working on the Prompt Flow → Microsoft Agent
 
 ## Context
 
-Prompt Flow is being retired (feature freeze 17 Apr 2026, full retirement 17 Apr 2027). This folder contains a 5-phase, hands-on migration guide with runnable Python samples that move a Prompt Flow workload to **Microsoft Agent Framework (MAF) 1.0 GA** (released 2 Apr 2026).
+Prompt Flow is being retired. This folder contains a 5-phase, hands-on migration guide with runnable Python samples that move a Prompt Flow workload to **Microsoft Agent Framework (MAF) 1.0 GA**.
 
 Target audience: teams running Prompt Flow on Azure AI Foundry or Azure Machine Learning.
 
@@ -175,6 +175,10 @@ When editing existing samples:
 | Workflow hangs | Circular edge definition | Check `add_edge()` calls for cycles; set `max_iterations` |
 | Low parity scores (< 2.0) | Wrong evaluator kwargs | Use `query=`, `response=`, `ground_truth=` |
 | No traces in App Insights | `configure_azure_monitor()` called too late | Call at application startup, before `workflow.run()` |
+| `WorkflowBuilder.build()` validation error | Missing start executor, type mismatch, duplicate names, or unreachable executor | Check `set_start_executor()`, edge types, and `register_executor()` names |
+| Client defaults to OpenAI instead of Azure | Both `OPENAI_API_KEY` and `AZURE_OPENAI_*` set | Remove `OPENAI_API_KEY` or pass `credential=` explicitly |
+| `/ask` returns 500 | Workflow not imported in `app.py` | Uncomment and update the `from your_module import workflow` line |
+| Container App image pull error | ACR auth or tag mismatch | Verify `--registry-server`, `AcrPull` role, and image tag |
 
 For the full list, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
 
@@ -182,11 +186,21 @@ For the full list, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
 
 ## Common Pitfalls
 
-1. **Mixing `--pre` and non-`--pre` installs** — Core MAF packages are GA; preview connectors (e.g. `agent-framework-copilotstudio`) still need `--pre` on a separate `pip install`.
-2. **Using `AzureOpenAIChatClient` with a Foundry endpoint** — Foundry project endpoints (`*.services.ai.azure.com`) require `FoundryChatClient`, not `AzureOpenAIChatClient`.
-3. **Fan-in missing a branch** — Every executor in `add_fan_out_edges()` must also appear in `add_fan_in_edges()`, or the aggregator fires early.
-4. **Condition functions receiving unexpected types** — Conditions receive the exact value passed to `ctx.send_message()`. Match on that value, not a transformed version.
-5. **Skipping Phase 3** — Always validate parity before migrating ops. Low-scoring outputs indicate unmigrated logic.
+1. **Mixing `--pre` and non-`--pre` installs** — Core MAF packages are GA; preview connectors (e.g. `agent-framework-copilotstudio`) still need `--pre` on a separate `pip install`. Never combine them in a single command.
+2. **Using `AzureOpenAIChatClient` with a Foundry endpoint** — Foundry project endpoints (`*.services.ai.azure.com`) require `FoundryChatClient`, not `AzureOpenAIChatClient`. The Azure OpenAI client targets `*.openai.azure.com` endpoints only.
+3. **Fan-in missing a branch** — Every executor in `add_fan_out_edges()` must also appear in `add_fan_in_edges()`, or the aggregator fires early with a partial result.
+4. **Fan-in handler receives `list[T]`, not `T`** — The aggregator executor's `@handler` parameter must be typed as `list[str]` (or `list[T]`), not a single `str`. The order matches the declaration order in `add_fan_in_edges()`.
+5. **Condition functions receiving unexpected types** — Conditions receive the exact value passed to `ctx.send_message()`. Match on that value, not a transformed version. Use named functions, not lambdas, for readability and testability.
+6. **Skipping Phase 3** — Always validate parity before migrating ops. Low-scoring outputs indicate unmigrated logic.
+7. **`OPENAI_API_KEY` and `AZURE_OPENAI_*` both set** — When both are present in the environment, the client may default to OpenAI (non-Azure). Pass the credential explicitly to force Azure routing, or remove `OPENAI_API_KEY`.
+8. **Instantiating one client per agent** — Share a single `AzureOpenAIChatClient()` instance across multiple agents. Creating separate clients wastes connection resources. See `07_multi_agent.py` for the pattern.
+9. **Forgetting `set_start_executor()`** — `WorkflowBuilder.build()` raises a validation error if no start executor is set. Also check for duplicate executor names, type mismatches on edges, and unreachable (registered but unconnected) executors.
+10. **Each executor needs a unique `id`** — The `id=` kwarg passed to the executor constructor must be unique within the workflow. Duplicates cause silent overwrites or runtime errors.
+11. **Tool function docstrings drive agent behaviour** — When registering Python functions as agent tools via `tools=[fn]`, the agent uses the function's docstring to decide when and how to call it. Missing or vague docstrings lead to unreliable tool use.
+12. **Tagged string routing pattern** — In multi-agent handoff (e.g. `07_multi_agent.py`), executors send `"category||payload"` and condition functions match on the prefix. Forgetting to split on `||` in the downstream handler causes the full tagged string to be processed as-is.
+13. **Using `gpt_similarity` instead of `similarity`** — `SimilarityEvaluator` returns both keys. `gpt_similarity` is deprecated; always read from `similarity`.
+14. **API keys in production Container Apps** — Use managed identity (`ManagedIdentityCredential`) and Key Vault secret references (`secretref:kv-*`) instead of inline API keys. See `phase-4-migrate-ops/4b-deployment/managed_identity.md`.
+15. **`DefaultAzureCredential` for local + cloud portability** — Use `DefaultAzureCredential()` when code must run both locally (Azure CLI auth) and in Azure (managed identity). Avoid it in production-only paths where `ManagedIdentityCredential` is more predictable.
 
 ---
 
