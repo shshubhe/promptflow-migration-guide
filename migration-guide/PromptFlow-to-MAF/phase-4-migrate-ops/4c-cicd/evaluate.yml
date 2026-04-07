@@ -7,7 +7,7 @@
 #   AZURE_OPENAI_API_KEY
 #   AZURE_OPENAI_ENDPOINT
 #   AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
-#   APPINSIGHTS_CONN
+#   APPINSIGHTS_CONN  (optional) — mapped to APPLICATIONINSIGHTS_CONNECTION_STRING in the workflow
 
 name: Evaluate on Deploy
 on:
@@ -34,10 +34,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Prepare parity input file
+      - name: Check parity input file exists
         run: |
-          [ -f phase-3-validate/test_inputs.csv ] || \
-          cp phase-3-validate/test_inputs.csv.example phase-3-validate/test_inputs.csv
+          if [ ! -f phase-3-validate/test_inputs.csv ]; then
+            echo "ERROR: phase-3-validate/test_inputs.csv is missing." >&2
+            echo "Copy test_inputs.csv.example to test_inputs.csv and populate it with real production queries before enabling the quality gate." >&2
+            exit 1
+          fi
 
       - name: Run parity evaluation
         run: python phase-3-validate/parity_check.py

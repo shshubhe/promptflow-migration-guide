@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import os
 from pathlib import Path
+import sys
 
 
 GUIDE_ROOT = Path(__file__).resolve().parent
@@ -46,6 +47,7 @@ def load_workflow(env_var: str = "MAF_WORKFLOW_FILE"):
         raise ImportError(f"Unable to load workflow module from {workflow_path}")
 
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module  # register before exec to handle re-imports correctly
     spec.loader.exec_module(module)
 
     if not hasattr(module, "workflow"):

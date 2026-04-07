@@ -36,8 +36,8 @@ migration-guide/PromptFlow-to-MAF/
 │   ├── 4b-deployment/         # FastAPI wrapper, Dockerfile, Container Apps
 │   └── 4c-cicd/               # GitHub Actions quality gate (evaluate.yml)
 └── phase-5-cutover/           # Traffic switch + PF decommissioning script
-│   ├── README.md
-│   └── cutover.sh             # Automated (or dry-run) PF retirement
+    ├── README.md
+    └── cutover.sh             # Automated (or dry-run) PF retirement
 ```
 
 ---
@@ -75,7 +75,7 @@ These are the foundational abstractions agents should understand when generating
 from agent_framework import Agent, Executor, WorkflowBuilder, WorkflowContext, handler
 from agent_framework.azure import AzureOpenAIChatClient
 from agent_framework.foundry import FoundryChatClient
-from agent_framework.azure import AzureAISearchContextProvider
+from agent_framework_azure_ai_search import AzureAISearchContextProvider
 ```
 
 > **Breaking change**: `agent-framework-azure-ai` was removed in 1.0. Use `agent-framework-foundry` instead.

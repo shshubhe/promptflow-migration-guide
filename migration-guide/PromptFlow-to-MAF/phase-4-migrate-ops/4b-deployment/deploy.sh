@@ -88,7 +88,7 @@ APP_URL=$(az containerapp show \
 
 healthy=false
 for ((i = 1; i <= HEALTHCHECK_ATTEMPTS; i++)); do
-  if curl --silent --fail "https://${APP_URL}/docs" >/dev/null; then
+  if curl --silent --fail "https://${APP_URL}/health" >/dev/null; then
     healthy=true
     break
   fi
@@ -96,7 +96,7 @@ for ((i = 1; i <= HEALTHCHECK_ATTEMPTS; i++)); do
 done
 
 if [[ "$healthy" != true ]]; then
-  echo "Container App did not become healthy in time: https://${APP_URL}/docs" >&2
+  echo "Container App did not become healthy in time: https://${APP_URL}/health" >&2
   exit 1
 fi
 
