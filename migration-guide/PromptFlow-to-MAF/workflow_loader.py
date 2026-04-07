@@ -50,7 +50,8 @@ def load_workflow(env_var: str = "MAF_WORKFLOW_FILE"):
 
     if not hasattr(module, "workflow"):
         raise AttributeError(
-            f"{workflow_path} does not define a module-level 'workflow' object."
+            f"{workflow_path} does not define a module-level 'workflow' object.\n"
+            "Expected pattern: workflow = WorkflowBuilder(...).build()"
         )
 
     return module.workflow
