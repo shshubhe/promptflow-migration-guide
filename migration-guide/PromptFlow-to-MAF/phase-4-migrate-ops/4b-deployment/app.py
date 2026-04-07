@@ -11,31 +11,29 @@ Run locally:
 Deploy:
     bash deploy.sh
 
-Update the workflow import below to point at your module.
+Optional: set MAF_WORKFLOW_FILE to your workflow file path
+          (default: phase-2-rebuild/01_linear_flow.py).
 """
 
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
+import sys
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from azure.monitor.opentelemetry import configure_azure_monitor
 
-# ── REQUIRED: update this import to point at your workflow module. ────────────
-# Example: from phase_2_rebuild.linear_flow import workflow
-# from your_module import workflow
-# ─────────────────────────────────────────────────────────────────────────────
+GUIDE_ROOT = Path(__file__).resolve().parents[2]
+if str(GUIDE_ROOT) not in sys.path:
+    sys.path.insert(0, str(GUIDE_ROOT))
+
+from workflow_loader import load_workflow
 
 load_dotenv()
 
-# Startup guard: fail fast with a clear message if the workflow was not imported.
-if "workflow" not in globals():
-    raise ImportError(
-        "workflow is not defined. Update the import at the top of this file to "
-        "point at your MAF workflow module.\n"
-        "Example: from phase_2_rebuild.linear_flow import workflow"
-    )
+workflow = load_workflow()
 
 # Tracing is optional — only configured when the connection string is present.
 # Set APPLICATIONINSIGHTS_CONNECTION_STRING in .env to enable Application Insights.

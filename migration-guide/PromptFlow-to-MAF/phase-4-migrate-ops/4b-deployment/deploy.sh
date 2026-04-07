@@ -14,6 +14,10 @@
 
 set -euo pipefail
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+GUIDE_DIR=$(cd "${SCRIPT_DIR}/../.." && pwd)
+cd "$GUIDE_DIR"
+
 ACR_NAME="<your-acr>"
 RESOURCE_GROUP="<your-rg>"
 CONTAINER_APP_ENV="<your-env>"
@@ -24,7 +28,11 @@ SEARCH_ENDPOINT="https://<search>.search.windows.net"
 SEARCH_INDEX="<index>"
 IMAGE="${ACR_NAME}.azurecr.io/${APP_NAME}:latest"
 
-az acr build --registry "$ACR_NAME" --image "${APP_NAME}:latest" .
+az acr build \
+  --registry "$ACR_NAME" \
+  --image "${APP_NAME}:latest" \
+  --file phase-4-migrate-ops/4b-deployment/Dockerfile \
+  .
 
 az containerapp create \
   --name "$APP_NAME" \

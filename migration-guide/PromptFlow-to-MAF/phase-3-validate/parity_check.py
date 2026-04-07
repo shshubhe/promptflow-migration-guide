@@ -11,36 +11,33 @@ Usage:
 Prerequisites:
     pip install azure-ai-evaluation pandas
     CSV format: columns 'question' and 'pf_output' (see test_inputs.csv.example)
-    Update the workflow import below to point at your module.
+    Optional: set MAF_WORKFLOW_FILE to your workflow file path
+              (default: phase-2-rebuild/01_linear_flow.py).
 """
 
 import asyncio
 import os
 from pathlib import Path
+import sys
 
 import pandas as pd
 from dotenv import load_dotenv
 from azure.ai.evaluation import SimilarityEvaluator
 
-# ── REQUIRED: update this import to point at your workflow module. ────────────
-# Example: from phase_2_rebuild.linear_flow import workflow
-# from your_module import workflow
-# ─────────────────────────────────────────────────────────────────────────────
-
 SCRIPT_DIR = Path(__file__).resolve().parent
+GUIDE_ROOT = SCRIPT_DIR.parent
 INPUT_CSV_PATH = SCRIPT_DIR / "test_inputs.csv"
 OUTPUT_CSV_PATH = SCRIPT_DIR / "parity_results.csv"
-ENV_PATH = SCRIPT_DIR.parent / ".env"
+ENV_PATH = GUIDE_ROOT / ".env"
+
+if str(GUIDE_ROOT) not in sys.path:
+    sys.path.insert(0, str(GUIDE_ROOT))
+
+from workflow_loader import load_workflow
 
 load_dotenv(dotenv_path=ENV_PATH)
 
-# Startup guard: fail fast with a clear message if the workflow was not imported.
-if "workflow" not in globals():
-    raise ImportError(
-        "workflow is not defined. Update the import at the top of this file to "
-        "point at your MAF workflow module.\n"
-        "Example: from phase_2_rebuild.linear_flow import workflow"
-    )
+workflow = load_workflow()
 
 # SimilarityEvaluator requires model_config in GA (1.16+).
 model_config = {
