@@ -32,5 +32,5 @@ The core mental model:
 # Checklist before moving to Phase 2
 - [ ] flow.dag.yaml exported and reviewed
 - [ ] Every node has a mapped MAF equivalent (see [node-mapping.md](./node-mapping.md/))
-- [ ] .env file populated (copy [template.env](../template.env) from repo root)
+- [ ] .env file populated (copy [.env.example](../.env.example) from repo root)
 - [ ] You know which samples in [phase-2-rebuild](../phase-2-rebuild/) match your flow's patterns
