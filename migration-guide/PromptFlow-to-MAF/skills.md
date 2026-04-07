@@ -36,7 +36,8 @@ migration-guide/PromptFlow-to-MAF/
 │   ├── 4b-deployment/         # FastAPI wrapper, Dockerfile, Container Apps
 │   └── 4c-cicd/               # GitHub Actions quality gate (evaluate.yml)
 └── phase-5-cutover/           # Traffic switch + PF decommissioning script
-    └── cutover.sh             # Automated (or dry-run) PF retirement
+│   ├── README.md
+│   └── cutover.sh             # Automated (or dry-run) PF retirement
 ```
 
 ---
