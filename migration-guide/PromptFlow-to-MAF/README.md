@@ -40,7 +40,14 @@ Work through the phases in order. Each folder has its own README with context, p
 ## Setup
 
 ```bash
-git clone https://github.com/<your-org>/promptflow-to-maf
-cd promptflow-to-maf
+git clone https://github.com/shshubhe/promptflow-migration-guide
+cd promptflow-migration-guide/migration-guide/PromptFlow-to-MAF
 pip install -r requirements.txt
 cp .env.example .env   # then fill in your values
+```
+
+---
+
+## Next Steps
+
+Start with [Phase 1 — Audit & Map](./phase-1-audit/) to export and map your existing Prompt Flow.

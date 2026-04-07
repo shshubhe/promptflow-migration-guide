@@ -49,6 +49,9 @@ class AggregatorExecutor(Executor):
     """Merge node — runs only after both PathA and PathB have completed.
 
     fan-in delivers all upstream results as list[str].
+    The order of results matches the order executors were declared in
+    add_fan_in_edges() — [PathA_result, PathB_result] — so it is safe to
+    rely on positional indexing if needed.
     """
 
     @handler
@@ -72,7 +75,7 @@ workflow = (
 
 async def main():
     result = await workflow.run("hello")
-    print(result.get_outputs()[0])  # → "PathA: HELLO | PathB: olleh" (order may vary)
+    print(result.get_outputs()[0])  # → "PathA: HELLO | PathB: olleh" (order matches add_fan_in_edges declaration)
 
 
 if __name__ == "__main__":

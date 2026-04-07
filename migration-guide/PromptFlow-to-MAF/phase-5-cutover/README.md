@@ -12,7 +12,8 @@ Switch production traffic to MAF and decommission Prompt Flow resources.
 
 ## Run
 
-    bash phase-5-cutover/cutover.sh
+    bash phase-5-cutover/cutover.sh           # execute for real
+    bash phase-5-cutover/cutover.sh --dry-run # preview commands without executing them
 
 ## After cutover
 

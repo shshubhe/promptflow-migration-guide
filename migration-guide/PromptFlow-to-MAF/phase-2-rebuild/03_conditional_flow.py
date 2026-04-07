@@ -56,6 +56,11 @@ def is_safe(message: str) -> bool:
     return message.lower() != "unsafe"
 
 
+def is_unsafe(message: str) -> bool:
+    """Explicit negation of is_safe — clearer and more testable than a lambda."""
+    return not is_safe(message)
+
+
 # Two edges leave ClassifyExecutor — only one fires per run.
 # This is the MAF equivalent of the PF If node.
 workflow = (
@@ -64,7 +69,7 @@ workflow = (
     .register_executor(lambda: SafeHandlerExecutor(id="safe"), name="SafeHandler")
     .register_executor(lambda: FlaggedHandlerExecutor(id="flagged"), name="FlaggedHandler")
     .add_edge("Classify", "SafeHandler", condition=is_safe)
-    .add_edge("Classify", "FlaggedHandler", condition=lambda msg: not is_safe(msg))
+    .add_edge("Classify", "FlaggedHandler", condition=is_unsafe)
     .set_start_executor("Classify")
     .build()
 )

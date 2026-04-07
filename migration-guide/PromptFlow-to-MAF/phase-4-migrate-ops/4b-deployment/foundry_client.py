@@ -1,6 +1,12 @@
 """
 Alternative client for teams using Azure AI Foundry as their model hub.
 
+NOTE: This file demonstrates a **standalone agent test** — it uses Agent
+directly without the Executor + WorkflowBuilder pattern. This is intentional
+for quickly verifying Foundry connectivity. For production workflows, see the
+samples in phase-2-rebuild/ which show the full Executor/WorkflowBuilder
+pattern.
+
 Use FoundryChatClient (from agent_framework.foundry) when connecting to a
 Foundry project endpoint. AzureOpenAIChatClient is for raw Azure OpenAI
 Service endpoints and should not be used here.

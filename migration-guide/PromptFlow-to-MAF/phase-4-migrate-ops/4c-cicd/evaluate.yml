@@ -10,16 +10,25 @@
 #   APPINSIGHTS_CONN
 
 name: Evaluate on Deploy
-on: [push]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   evaluate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
 
       - name: Install dependencies
-        run: pip install agent-framework azure-ai-evaluation python-dotenv pandas
+        run: pip install -r requirements.txt
 
       - name: Run parity evaluation
         run: python phase-3-validate/parity_check.py

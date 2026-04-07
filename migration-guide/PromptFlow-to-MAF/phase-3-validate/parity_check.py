@@ -21,11 +21,20 @@ import pandas as pd
 from dotenv import load_dotenv
 from azure.ai.evaluation import SimilarityEvaluator
 
-# Update this import to point at your workflow module.
+# ── REQUIRED: update this import to point at your workflow module. ────────────
 # Example: from phase_2_rebuild.linear_flow import workflow
 # from your_module import workflow
+# ─────────────────────────────────────────────────────────────────────────────
 
 load_dotenv()
+
+# Startup guard: fail fast with a clear message if the workflow was not imported.
+if "workflow" not in globals():
+    raise ImportError(
+        "workflow is not defined. Update the import at the top of this file to "
+        "point at your MAF workflow module.\n"
+        "Example: from phase_2_rebuild.linear_flow import workflow"
+    )
 
 # SimilarityEvaluator requires model_config in GA (1.16+).
 model_config = {

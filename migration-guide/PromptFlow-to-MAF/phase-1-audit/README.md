@@ -22,7 +22,7 @@ This YAML is your migration blueprint. Keep it open while working through Phase 
 
 ## Step 1b: Map each node to its MAF equivalent
 
-See [node-mapping.md](./node-mapping.md/) for the full table.
+See [node-mapping.md](./node-mapping.md) for the full table.
 
 The core mental model:
 - Every node → one Executor class with a @handler method
@@ -31,6 +31,6 @@ The core mental model:
 
 # Checklist before moving to Phase 2
 - [ ] flow.dag.yaml exported and reviewed
-- [ ] Every node has a mapped MAF equivalent (see [node-mapping.md](./node-mapping.md/))
+- [ ] Every node has a mapped MAF equivalent (see [node-mapping.md](./node-mapping.md))
 - [ ] .env file populated (copy [.env.example](../.env.example) from repo root)
 - [ ] You know which samples in [phase-2-rebuild](../phase-2-rebuild/) match your flow's patterns

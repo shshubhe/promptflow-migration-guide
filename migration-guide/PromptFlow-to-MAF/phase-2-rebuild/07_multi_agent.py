@@ -20,13 +20,11 @@ from agent_framework.azure import AzureOpenAIChatClient
 
 load_dotenv()
 
+# One shared client is the recommended production pattern — instantiating a
+# separate client per agent is unnecessary and wastes connection resources.
+_client = AzureOpenAIChatClient()
 
-def make_client() -> AzureOpenAIChatClient:
-    """Returns a fresh AzureOpenAIChatClient reading credentials from environment."""
-    return AzureOpenAIChatClient()
-
-
-triage_agent = make_client().as_agent(
+triage_agent = _client.as_agent(
     name="TriageAgent",
     instructions=(
         "You are a triage assistant. Classify the user message as either "
@@ -34,7 +32,7 @@ triage_agent = make_client().as_agent(
     ),
 )
 
-billing_agent = make_client().as_agent(
+billing_agent = _client.as_agent(
     name="BillingAgent",
     instructions=(
         "You are a billing support specialist. "
@@ -42,7 +40,7 @@ billing_agent = make_client().as_agent(
     ),
 )
 
-technical_agent = make_client().as_agent(
+technical_agent = _client.as_agent(
     name="TechnicalAgent",
     instructions=(
         "You are a technical support specialist. "
