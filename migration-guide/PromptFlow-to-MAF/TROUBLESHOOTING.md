@@ -287,11 +287,12 @@ Insights resource → Overview → Connection String.
 
 ### `uvicorn` starts but `/ask` returns 500
 
-The most common cause is that `workflow` is not imported in `app.py`.
-The import line is commented out by default — uncomment it and point it
-at your module:
+The most common cause is that `app.py` loaded the wrong workflow file, or the
+target file does not define a module-level `workflow` object. By default the
+deployment sample uses `phase-2-rebuild/01_linear_flow.py`. To deploy your own
+workflow, set `MAF_WORKFLOW_FILE`:
 
-    from your_module import workflow
+    export MAF_WORKFLOW_FILE=phase-2-rebuild/05_rag_flow.py
 
 Also check the Application Insights trace for the full exception — the 500
 response body is intentionally generic to avoid leaking internals.

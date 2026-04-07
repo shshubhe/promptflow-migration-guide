@@ -11,30 +11,33 @@ Usage:
 Prerequisites:
     pip install azure-ai-evaluation pandas
     CSV format: columns 'question' and 'pf_output' (see test_inputs.csv.example)
-    Update the workflow import below to point at your module.
+    Optional: set MAF_WORKFLOW_FILE to your workflow file path
+              (default: phase-2-rebuild/01_linear_flow.py).
 """
 
 import asyncio
 import os
+from pathlib import Path
+import sys
 
 import pandas as pd
 from dotenv import load_dotenv
 from azure.ai.evaluation import SimilarityEvaluator
 
-# ── REQUIRED: update this import to point at your workflow module. ────────────
-# Example: from phase_2_rebuild.linear_flow import workflow
-# from your_module import workflow
-# ─────────────────────────────────────────────────────────────────────────────
+SCRIPT_DIR = Path(__file__).resolve().parent
+GUIDE_ROOT = SCRIPT_DIR.parent
+INPUT_CSV_PATH = SCRIPT_DIR / "test_inputs.csv"
+OUTPUT_CSV_PATH = SCRIPT_DIR / "parity_results.csv"
+ENV_PATH = GUIDE_ROOT / ".env"
 
-load_dotenv()
+if str(GUIDE_ROOT) not in sys.path:
+    sys.path.insert(0, str(GUIDE_ROOT))
 
-# Startup guard: fail fast with a clear message if the workflow was not imported.
-if "workflow" not in globals():
-    raise ImportError(
-        "workflow is not defined. Update the import at the top of this file to "
-        "point at your MAF workflow module.\n"
-        "Example: from phase_2_rebuild.linear_flow import workflow"
-    )
+from workflow_loader import load_workflow
+
+load_dotenv(dotenv_path=ENV_PATH)
+
+workflow = load_workflow()
 
 # SimilarityEvaluator requires model_config in GA (1.16+).
 model_config = {
@@ -46,7 +49,14 @@ model_config = {
 SIMILARITY_THRESHOLD = 3.5  # Scores below this are flagged for review (scale: 1–5)
 
 evaluator = SimilarityEvaluator(model_config=model_config, threshold=3)
-test_data = pd.read_csv("test_inputs.csv")
+if not INPUT_CSV_PATH.exists():
+    raise FileNotFoundError(
+        f"Missing input file: {INPUT_CSV_PATH}\n"
+        "Copy test_inputs.csv.example to test_inputs.csv and replace it with your "
+        "captured Prompt Flow outputs before running parity_check.py."
+    )
+
+test_data = pd.read_csv(INPUT_CSV_PATH)
 results = []
 
 
@@ -83,8 +93,8 @@ async def run_parity_check():
         print(f"\n{len(regressions)} answer(s) to review:")
         print(regressions[["question", "similarity"]].to_string(index=False))
 
-    df.to_csv("parity_results.csv", index=False)
-    print("\nFull results saved to parity_results.csv")
+    df.to_csv(OUTPUT_CSV_PATH, index=False)
+    print(f"\nFull results saved to {OUTPUT_CSV_PATH}")
 
 
 if __name__ == "__main__":

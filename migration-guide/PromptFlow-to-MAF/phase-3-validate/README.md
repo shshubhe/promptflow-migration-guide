@@ -7,7 +7,9 @@ Similarity scores are 1–5 (5 = most similar).
 
 1. Capture 20–30 real queries from your PF app and save them as a CSV with columns `question` and `pf_output`. See [test_inputs.csv.example](test_inputs.csv.example).
 
-2. In [parity_check.py](parity_check.py), update the workflow import at the top of the file to point at your module.
+2. If you are validating a workflow other than the default sample, set `MAF_WORKFLOW_FILE`
+   to the Python file that defines your module-level `workflow` object
+   (example: `phase-2-rebuild/01_linear_flow.py`).
 
 ## Run
 

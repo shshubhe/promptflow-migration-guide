@@ -9,6 +9,7 @@ Prompt Flow equivalent:
 """
 
 import asyncio
+from typing import TypedDict
 
 from dotenv import load_dotenv
 from typing_extensions import Never
@@ -18,47 +19,52 @@ from agent_framework import Executor, WorkflowBuilder, WorkflowContext, handler
 load_dotenv()
 
 
+class ClassifiedMessage(TypedDict):
+    label: str
+    text: str
+
+
 class ClassifyExecutor(Executor):
-    """Classifies input and sends a label ('safe' or 'unsafe') downstream.
+    """Classifies input and sends a structured payload downstream.
 
     Replace the body of classify() with your real classification logic
     (e.g. an LLM call, a rules engine, a model inference call).
     """
 
     @handler
-    async def classify(self, text: str, ctx: WorkflowContext[str]) -> None:
+    async def classify(self, text: str, ctx: WorkflowContext[ClassifiedMessage]) -> None:
         label = "unsafe" if "bad_word" in text.lower() else "safe"
-        await ctx.send_message(label)
+        await ctx.send_message({"label": label, "text": text})
 
 
 class SafeHandlerExecutor(Executor):
     """Handles input that passed the safety check."""
 
     @handler
-    async def handle_safe(self, label: str, ctx: WorkflowContext[Never, str]) -> None:
-        await ctx.yield_output(f"Processed: {label}")
+    async def handle_safe(self, message: ClassifiedMessage, ctx: WorkflowContext[Never, str]) -> None:
+        await ctx.yield_output(f"Processed: {message['text']}")
 
 
 class FlaggedHandlerExecutor(Executor):
     """Handles input that failed the safety check."""
 
     @handler
-    async def handle_flagged(self, label: str, ctx: WorkflowContext[Never, str]) -> None:
-        await ctx.yield_output(f"Flagged for review: {label}")
+    async def handle_flagged(self, message: ClassifiedMessage, ctx: WorkflowContext[Never, str]) -> None:
+        await ctx.yield_output(f"Flagged for review: {message['text']}")
 
 
-def is_safe(message: str) -> bool:
+def is_safe(message: ClassifiedMessage) -> bool:
     """Condition function passed to add_edge().
 
     Receives the outgoing message from ClassifyExecutor.
     Returns True to fire the edge, False to suppress it.
     """
-    return message.lower() != "unsafe"
+    return message["label"] == "safe"
 
 
-def is_unsafe(message: str) -> bool:
+def is_unsafe(message: ClassifiedMessage) -> bool:
     """Explicit negation of is_safe — clearer and more testable than a lambda."""
-    return not is_safe(message)
+    return message["label"] == "unsafe"
 
 
 # Two edges leave ClassifyExecutor — only one fires per run.

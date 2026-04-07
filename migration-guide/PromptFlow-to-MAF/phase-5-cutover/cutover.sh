@@ -7,11 +7,28 @@
 # Usage:
 #   bash cutover.sh           # execute for real
 #   bash cutover.sh --dry-run # print commands without executing them
+#   bash cutover.sh --yes     # skip confirmation prompt
 
 set -euo pipefail
 
 DRY_RUN=false
-[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
+SKIP_CONFIRM=false
+
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run)
+            DRY_RUN=true
+            ;;
+        --yes|--force)
+            SKIP_CONFIRM=true
+            ;;
+        *)
+            echo "Unknown argument: $arg" >&2
+            echo "Usage: bash cutover.sh [--dry-run] [--yes]" >&2
+            exit 2
+            ;;
+    esac
+done
 
 # Wrapper: prints the command in dry-run mode, otherwise executes it.
 run() {
@@ -28,8 +45,10 @@ RESOURCE_GROUP="<your-rg>"
 WORKSPACE="<your-ws>"
 FLOW_DIR="<your-flow-directory>"
 
-read -p "Confirm traffic has been rerouted to the MAF endpoint (y/n): " confirm
-[[ "$confirm" == "y" ]] || { echo "Aborting."; exit 1; }
+if ! $DRY_RUN && ! $SKIP_CONFIRM; then
+    read -p "Confirm traffic has been rerouted to the MAF endpoint (y/n): " confirm
+    [[ "$confirm" == "y" ]] || { echo "Aborting."; exit 1; }
+fi
 
 echo "Archiving flow YAML..."
 run pf flow archive --source "$FLOW_DIR"
