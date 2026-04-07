@@ -1,0 +1,40 @@
+# Runs parity_check.py on every push and fails the pipeline if mean
+# similarity drops below the quality threshold (3.5 / 5.0).
+#
+# Replaces: Manual evaluation runs in the Prompt Flow UI.
+#
+# Required repository secrets:
+#   AZURE_OPENAI_API_KEY
+#   AZURE_OPENAI_ENDPOINT
+#   AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
+#   APPINSIGHTS_CONN
+
+name: Evaluate on Deploy
+on: [push]
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: pip install agent-framework azure-ai-evaluation python-dotenv pandas
+
+      - name: Run parity evaluation
+        run: python phase-3-validate/parity_check.py
+        env:
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_CHAT_DEPLOYMENT_NAME }}
+          APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.APPINSIGHTS_CONN }}
+
+      - name: Enforce quality gate
+        run: |
+          python -c "
+          import pandas as pd, sys
+          df = pd.read_csv('parity_results.csv')
+          score = df['similarity'].mean()
+          print(f'Mean similarity: {score:.2f} / 5.0')
+          sys.exit(0 if score >= 3.5 else 1)
+          "
