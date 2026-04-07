@@ -1,16 +1,13 @@
 # Phase 3 — Validate Output Parity
 
-Run your captured PF outputs and the new MAF workflow against the same
-test inputs, then score semantic similarity using the Azure AI Evaluation SDK.
+Run your captured PF outputs and the new MAF workflow against the same test inputs, then score semantic similarity using the Azure AI Evaluation SDK.
 Similarity scores are 1–5 (5 = most similar).
 
 ## Setup
 
-1. Capture 20–30 real queries from your PF app and save them as a CSV with
-   columns `question` and `pf_output`. See `test_inputs.csv.example`.
+1. Capture 20–30 real queries from your PF app and save them as a CSV with columns `question` and `pf_output`. See `test_inputs.csv.md`.
 
-2. In `parity_check.py`, update the workflow import at the top of the file
-   to point at your module.
+2. In `parity_check.py`, update the workflow import at the top of the file to point at your module.
 
 ## Run
 
