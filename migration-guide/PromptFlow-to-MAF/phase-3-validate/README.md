@@ -7,7 +7,7 @@ Similarity scores are 1–5 (5 = most similar).
 
 1. Capture 20–30 real queries from your PF app and save them as a CSV with columns `question` and `pf_output`. See [test_inputs.csv](test_inputs.csv.md).
 
-2. In `parity_check.py`, update the workflow import at the top of the file to point at your module.
+2. In [parity_check.py](parity_check.py), update the workflow import at the top of the file to point at your module.
 
 ## Run
 
