@@ -22,14 +22,26 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from azure.monitor.opentelemetry import configure_azure_monitor
 
-# Update this import to point at your workflow module.
+# ── REQUIRED: update this import to point at your workflow module. ────────────
+# Example: from phase_2_rebuild.linear_flow import workflow
 # from your_module import workflow
+# ─────────────────────────────────────────────────────────────────────────────
 
 load_dotenv()
 
-configure_azure_monitor(
-    connection_string=os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"]
-)
+# Startup guard: fail fast with a clear message if the workflow was not imported.
+if "workflow" not in globals():
+    raise ImportError(
+        "workflow is not defined. Update the import at the top of this file to "
+        "point at your MAF workflow module.\n"
+        "Example: from phase_2_rebuild.linear_flow import workflow"
+    )
+
+# Tracing is optional — only configured when the connection string is present.
+# Set APPLICATIONINSIGHTS_CONNECTION_STRING in .env to enable Application Insights.
+_appinsights_conn = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+if _appinsights_conn:
+    configure_azure_monitor(connection_string=_appinsights_conn)
 
 
 class QuestionRequest(BaseModel):
