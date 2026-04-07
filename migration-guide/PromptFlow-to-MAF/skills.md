@@ -178,7 +178,7 @@ When editing existing samples:
 | No traces in App Insights | `configure_azure_monitor()` called too late | Call at application startup, before `workflow.run()` |
 | `WorkflowBuilder.build()` validation error | Missing start executor, type mismatch, duplicate names, or unreachable executor | Check `set_start_executor()`, edge types, and `register_executor()` names |
 | Client defaults to OpenAI instead of Azure | Both `OPENAI_API_KEY` and `AZURE_OPENAI_*` set | Remove `OPENAI_API_KEY` or pass `credential=` explicitly |
-| `/ask` returns 500 | Workflow not imported in `app.py` | Uncomment and update the `from your_module import workflow` line |
+| `/ask` returns 500 | `MAF_WORKFLOW_FILE` points at the wrong file, or the file does not define `workflow` | Point `MAF_WORKFLOW_FILE` at a valid workflow sample/module |
 | Container App image pull error | ACR auth or tag mismatch | Verify `--registry-server`, `AcrPull` role, and image tag |
 
 For the full list, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
