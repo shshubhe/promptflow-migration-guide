@@ -1,0 +1,7 @@
+## phase-3-validate/test_inputs.csv.example
+
+```csv
+question,pf_output
+"What is the refund policy?","You can request a refund within 30 days of purchase."
+"How do I reset my password?","Go to the login page and click 'Forgot password'."
+"What are your support hours?","Our support team is available Monday to Friday, 9am–6pm."
