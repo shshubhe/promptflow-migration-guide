@@ -36,6 +36,8 @@ SEARCH_ENDPOINT="https://<search>.search.windows.net"
 SEARCH_INDEX="<index>"
 IMAGE="${ACR_NAME}.azurecr.io/${APP_NAME}:latest"
 WORKFLOW_FILE="${MAF_WORKFLOW_FILE:-phase-2-rebuild/01_linear_flow.py}"
+HEALTHCHECK_ATTEMPTS="${HEALTHCHECK_ATTEMPTS:-12}"
+HEALTHCHECK_SLEEP_SECONDS="${HEALTHCHECK_SLEEP_SECONDS:-10}"
 
 SECRET_ARGS=(
   openai-key="$AZURE_OPENAI_API_KEY"
@@ -85,12 +87,12 @@ APP_URL=$(az containerapp show \
   --query "properties.configuration.ingress.fqdn" -o tsv)
 
 healthy=false
-for _ in {1..12}; do
+for ((i = 1; i <= HEALTHCHECK_ATTEMPTS; i++)); do
   if curl --silent --fail "https://${APP_URL}/docs" >/dev/null; then
     healthy=true
     break
   fi
-  sleep 10
+  sleep "$HEALTHCHECK_SLEEP_SECONDS"
 done
 
 if [[ "$healthy" != true ]]; then

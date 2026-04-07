@@ -62,6 +62,8 @@ async def evaluate_row(semaphore: asyncio.Semaphore, question: str, pf_answer: s
         maf_result = await workflow.run(question)
         maf_answer = maf_result.get_outputs()[0]
 
+        # Keep evaluator calls inside the same concurrency bound because they also
+        # make model-backed requests and can trigger the same rate limits.
         # evaluator() returns {"similarity": float, "gpt_similarity": float}.
         # Use "similarity" — "gpt_similarity" is deprecated in GA.
         score_dict = await asyncio.to_thread(

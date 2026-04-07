@@ -18,6 +18,9 @@ def load_workflow(env_var: str = "MAF_WORKFLOW_FILE"):
     parity-check and deployment examples remain runnable out of the box. Set
     ``MAF_WORKFLOW_FILE`` to a different file when validating or deploying your
     own migrated workflow.
+
+    Returns:
+        The loaded module-level workflow object.
     """
 
     workflow_file = os.getenv(env_var)

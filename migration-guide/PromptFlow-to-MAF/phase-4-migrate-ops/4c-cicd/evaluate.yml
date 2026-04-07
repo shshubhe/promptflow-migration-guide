@@ -35,7 +35,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Prepare parity input file
-        run: cp -n phase-3-validate/test_inputs.csv.example phase-3-validate/test_inputs.csv || true
+        run: |
+          [ -f phase-3-validate/test_inputs.csv ] || \
+          cp phase-3-validate/test_inputs.csv.example phase-3-validate/test_inputs.csv
 
       - name: Run parity evaluation
         run: python phase-3-validate/parity_check.py
